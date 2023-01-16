@@ -5,7 +5,7 @@ type Props = {};
 
 export default function Footer({}: Props) {
   return (
-    <div className="absolute bottom-5 w-full px-4">
+    <div className="absolute bottom-0 w-full px-4 pb-2">
       <div className="max-w-lg mx-auto">
         <p className="text-gray-500 text-center text-xs">
           Esta pagina no recolecta datos personales, ni los almacena en ninguna

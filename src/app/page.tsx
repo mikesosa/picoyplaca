@@ -1,91 +1,72 @@
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from './page.module.css'
+"use client";
+import Input from "@/components/Input";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { formSchema } from "../components/formSchema";
+import { useEffect, useState } from "react";
 
-const inter = Inter({ subsets: ['latin'] })
+// const inter = Inter({ subsets: ['latin'] })
+
+const EVEN_PLATES = [1, 2, 3, 4, 5];
+const ODD_PLATES = [6, 7, 8, 9, 0];
 
 export default function Home() {
+  const [result, setResult] = useState<any>(null);
+
+  const {
+    register,
+    reset,
+    watch: watchForm,
+    handleSubmit: handleSubmitForm,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(formSchema),
+  });
+
+  const checkPicoPlaca = (plate: string) => {
+    const lastDigit = plate[plate.length - 1];
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const day = date.slice(6, 8);
+    const isDateEven = Number(day) % 2 === 0;
+    if (isDateEven) {
+      setResult(EVEN_PLATES.includes(Number(lastDigit)));
+    }
+    setResult(ODD_PLATES.includes(Number(lastDigit)));
+  };
+
+  useEffect(() => {
+    const subscription = watchForm((value, { name, type }) => {
+      if (name === "number") {
+        if (value.number.length === 3) {
+          checkPicoPlaca(value.number);
+        } else {
+          setResult(null);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watchForm]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex flex-column justify-center h-screen">
+      <div className="flex flex-col justify-center items-center">
+        <h2 className="text-center font-bold text-2xl uppercase">
+          ¿Tengo pico y placa hoy?
+        </h2>
+
+        <div className="py-8 w-2/4 sm:w-2/5">
+          <Input
+            type="number"
+            label="Ingresa los 3 digitos de tu placa"
+            className="p-2 mt-4 text-center text-5xl w-full text-black bg-[#F7C001] rounded-lg border-4 border-[black] focus:outline-none focus:ring-4 focus:ring-[black]focus:border-transparent"
+            errors={errors}
+            {...register("number")}
+          />
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-        <div className={styles.thirteen}>
-          <Image src="/thirteen.svg" alt="13" width={40} height={31} priority />
-        </div>
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={inter.className}>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p className={inter.className}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <h2 className="text-center font-bold text-6xl uppercase">
+          {result === null ? "" : result ? "Si" : "No"}
+        </h2>
       </div>
     </main>
-  )
+  );
 }

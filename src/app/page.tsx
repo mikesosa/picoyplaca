@@ -3,9 +3,10 @@ import Input from "@/components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { formSchema } from "../components/formSchema";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
 import moment from "moment";
+import Footer from "@/components/Footer";
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -85,12 +86,13 @@ export default function Home() {
   }, [watchForm]);
 
   return (
-    <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex flex-column justify-center h-screen">
+    <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex justify-center h-screen">
       <div className="flex flex-col justify-center items-center">
-        <p className="text-center font-bold text-2xl capitalize">
+        <p className="text-center font-bold text-3xl capitalize">BOGOTÁ D.C</p>
+        <p className="text-center font-bold text-2xl capitalize mt-3">
           {dateFormatter(new Date())}
         </p>
-        <div className="py-8 w-2/4 sm:w-2/5">
+        <div className="mt-4 mb-8 w-2/4 sm:w-2/5">
           <Input
             type="number"
             label="Ingresa los 3 digitos de tu placa"
@@ -117,6 +119,7 @@ export default function Home() {
           </>
         )}
       </div>
+      <Footer />
     </main>
   );
 }

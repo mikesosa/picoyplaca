@@ -25,6 +25,11 @@ export default function Head() {
           gtag('config', 'G-L3ZSJ0W36Q');
         `}
       </Script>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4475122295223891"
+        crossOrigin="anonymous"
+      />
     </>
   );
 }

@@ -3,15 +3,45 @@ import Input from "@/components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { formSchema } from "../components/formSchema";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
+import moment from "moment";
 
 // const inter = Inter({ subsets: ['latin'] })
 
 const EVEN_PLATES = [1, 2, 3, 4, 5];
 const ODD_PLATES = [6, 7, 8, 9, 0];
 
+function getWorkingDays(startDate: Date, endDate: Date) {
+  const dates = [];
+  const currentDate = startDate;
+  while (currentDate <= endDate) {
+    const weekDay = currentDate.getDay();
+    if (weekDay != 0 && weekDay != 6) {
+      dates.push(new Date(currentDate));
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return dates;
+}
+
+const getRestrictionDates = (isEven: boolean, weekDates: any) => {
+  const days = weekDates
+    .filter((date: any) => {
+      const day = date.toISOString().slice(0, 10).replace(/-/g, "").slice(6, 8);
+      if (isEven) {
+        return Number(day) % 2 === 0;
+      }
+      return Number(day) % 2 !== 0;
+    })
+    .map((date: any) => dateToDayName(date));
+
+  return days;
+};
+
 export default function Home() {
   const [result, setResult] = useState<any>(null);
+  const [restrictionDays, setRestrictionDays] = useState<any>([]);
 
   const {
     register,
@@ -24,14 +54,21 @@ export default function Home() {
   });
 
   const checkPicoPlaca = (plate: string) => {
+    const startOfWeek = new Date();
+    const endOfWeek = moment().endOf("week").toDate();
+    const weekDates = getWorkingDays(startOfWeek, endOfWeek);
     const lastDigit = plate[plate.length - 1];
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const day = date.slice(6, 8);
     const isDateEven = Number(day) % 2 === 0;
+    const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
+    const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
     if (isDateEven) {
       setResult(EVEN_PLATES.includes(Number(lastDigit)));
+    } else {
+      setResult(ODD_PLATES.includes(Number(lastDigit)));
     }
-    setResult(ODD_PLATES.includes(Number(lastDigit)));
+    setRestrictionDays(restrictionDays);
   };
 
   useEffect(() => {
@@ -50,10 +87,9 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex flex-column justify-center h-screen">
       <div className="flex flex-col justify-center items-center">
-        <h2 className="text-center font-bold text-2xl uppercase">
-          ¿Tengo pico y placa hoy?
-        </h2>
-
+        <p className="text-center font-bold text-2xl capitalize">
+          {dateFormatter(new Date())}
+        </p>
         <div className="py-8 w-2/4 sm:w-2/5">
           <Input
             type="number"
@@ -63,9 +99,23 @@ export default function Home() {
             {...register("number")}
           />
         </div>
-        <h2 className="text-center font-bold text-6xl uppercase">
-          {result === null ? "" : result ? "Si" : "No"}
-        </h2>
+        <h3 className="text-center font-bold text-2xl uppercase">
+          ¿Tengo pico y placa hoy?
+        </h3>
+        {result !== null && (
+          <>
+            <h2 className="text-center font-bold text-6xl uppercase">
+              {result ? "Si" : "No"}
+            </h2>
+
+            <p className="text-center text-md mt-3">
+              Esta semana tienes pico y placa los dias:
+            </p>
+            <span className="font-bold capitalize">
+              {restrictionDays.join(", ")}
+            </span>
+          </>
+        )}
       </div>
     </main>
   );

@@ -6,7 +6,6 @@ import { formSchema } from "../components/formSchema";
 import { useEffect, useState } from "react";
 import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
 import moment from "moment";
-import Footer from "@/components/Footer";
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -86,7 +85,7 @@ export default function Home() {
   }, [watchForm]);
 
   return (
-    <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex justify-center h-screen">
+    <main className="mx-auto sm:px-6 lg:px-8 flex justify-center h-screen">
       <div className="flex flex-col justify-center items-center">
         <p className="text-center font-bold text-2xl capitalize">
           {dateFormatter(new Date())}
@@ -118,7 +117,6 @@ export default function Home() {
           </>
         )}
       </div>
-      <Footer />
     </main>
   );
 }

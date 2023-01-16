@@ -88,8 +88,7 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex justify-center h-screen">
       <div className="flex flex-col justify-center items-center">
-        <p className="text-center font-bold text-3xl capitalize">BOGOTÁ D.C</p>
-        <p className="text-center font-bold text-2xl capitalize mt-3">
+        <p className="text-center font-bold text-2xl capitalize">
           {dateFormatter(new Date())}
         </p>
         <div className="mt-4 mb-8 w-2/4 sm:w-2/5">

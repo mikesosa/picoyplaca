@@ -95,7 +95,7 @@ export default function Home() {
           <Input
             type="number"
             label="Ingresa los 3 digitos de tu placa"
-            className="p-2 mt-4 text-center text-5xl w-full text-black bg-[#F7C001] rounded-lg border-4 border-[black] focus:outline-none focus:ring-4 focus:ring-[black]focus:border-transparent"
+            className="appearance-none p-2 mt-4 text-center text-5xl w-full text-black bg-[#F7C001] rounded-lg border-4 border-[black] focus:outline-none focus:ring-4 focus:ring-[black]focus:border-transparent"
             errors={errors}
             {...register("number")}
           />

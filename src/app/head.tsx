@@ -7,7 +7,7 @@ export default function Head() {
       <meta content="width=device-width, initial-scale=1" name="viewport" />
       <meta
         name="description"
-        content="Un sitio que brinda a los bogotanos saber si tienen pico y placa"
+        content="Un sitio que brinda a los Bogotános saber si tienen Pico y Placa"
       />
       <link rel="icon" href="/favicon.ico" />
 

@@ -64,9 +64,9 @@ export default function Home() {
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
     const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
     if (isDateEven) {
-      setResult(EVEN_PLATES.includes(Number(lastDigit)));
-    } else {
       setResult(ODD_PLATES.includes(Number(lastDigit)));
+    } else {
+      setResult(EVEN_PLATES.includes(Number(lastDigit)));
     }
     setRestrictionDays(restrictionDays);
   };

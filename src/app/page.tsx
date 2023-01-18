@@ -42,6 +42,7 @@ const getRestrictionDates = (isEven: boolean, weekDates: any) => {
 export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [restrictionDays, setRestrictionDays] = useState<any>([]);
+  const [isWeekend, setIsWeekend] = useState<any>(false);
 
   const {
     register,
@@ -53,21 +54,24 @@ export default function Home() {
     resolver: yupResolver(formSchema),
   });
 
-  const checkPicoPlaca = (plate: string) => {
+  const checkPicoPlaca = (plate: string, newDate: Date) => {
     const startOfWeek = moment().startOf("week").toDate();
     const endOfWeek = moment().endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
     const lastDigit = plate[plate.length - 1];
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const date = new Date(newDate).toISOString().slice(0, 10).replace(/-/g, "");
     const day = date.slice(6, 8);
     const isDateEven = Number(day) % 2 === 0;
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
     const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
+    const isWeekendDay =
+      new Date(newDate).getDay() === 0 || new Date(newDate).getDay() === 6;
     if (isDateEven) {
       setResult(EVEN_PLATES.includes(Number(lastDigit)));
     } else {
       setResult(ODD_PLATES.includes(Number(lastDigit)));
     }
+    setIsWeekend(isWeekendDay);
     setRestrictionDays(restrictionDays);
   };
 
@@ -75,9 +79,10 @@ export default function Home() {
     const subscription = watchForm((value, { name, type }) => {
       if (name === "number") {
         if (value.number.length === 3) {
-          checkPicoPlaca(value.number);
+          checkPicoPlaca(value.number, new Date());
         } else {
           setResult(null);
+          setIsWeekend(false);
         }
       }
     });
@@ -104,7 +109,13 @@ export default function Home() {
         <h3 className="text-center font-bold text-2xl uppercase">
           ¿Tengo pico y placa hoy?
         </h3>
-        {result !== null && (
+        {isWeekend && (
+          <h2 className="text-center font-bold text-6xl uppercase">
+            NO APLICA
+          </h2>
+        )}
+
+        {!isWeekend && result !== null && (
           <>
             <h2 className="text-center font-bold text-6xl uppercase">
               {result ? "Si" : "No"}

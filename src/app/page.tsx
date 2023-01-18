@@ -3,7 +3,7 @@ import Input from "@/components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { formSchema } from "../components/formSchema";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
 import moment from "moment";
 
@@ -40,6 +40,7 @@ const getRestrictionDates = (isEven: boolean, weekDates: any) => {
 };
 
 export default function Home() {
+  const today = useMemo(() => new Date(), []);
   const [result, setResult] = useState<any>(null);
   const [restrictionDays, setRestrictionDays] = useState<any>([]);
   const [isWeekend, setIsWeekend] = useState<any>(false);
@@ -54,18 +55,21 @@ export default function Home() {
     resolver: yupResolver(formSchema),
   });
 
-  const checkPicoPlaca = (plate: string, newDate: Date) => {
+  const checkPicoPlaca = (plate: string, date: Date) => {
     const startOfWeek = moment().startOf("week").toDate();
     const endOfWeek = moment().endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
     const lastDigit = plate[plate.length - 1];
-    const date = new Date(newDate).toISOString().slice(0, 10).replace(/-/g, "");
-    const day = date.slice(6, 8);
+    const stringDate = new Date(date)
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, "");
+    const day = stringDate.slice(6, 8);
     const isDateEven = Number(day) % 2 === 0;
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
     const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
     const isWeekendDay =
-      new Date(newDate).getDay() === 0 || new Date(newDate).getDay() === 6;
+      new Date(date).getDay() === 0 || new Date(date).getDay() === 6;
     if (isDateEven) {
       setResult(EVEN_PLATES.includes(Number(lastDigit)));
     } else {
@@ -79,7 +83,7 @@ export default function Home() {
     const subscription = watchForm((value, { name, type }) => {
       if (name === "number") {
         if (value.number.length === 3) {
-          checkPicoPlaca(value.number, new Date());
+          checkPicoPlaca(value.number, today);
         } else {
           setResult(null);
           setIsWeekend(false);
@@ -87,7 +91,7 @@ export default function Home() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [watchForm]);
+  }, [watchForm, today]);
 
   return (
     <main className="mx-auto sm:px-6 lg:px-8 flex justify-center h-screen pb-32">
@@ -95,7 +99,7 @@ export default function Home() {
         <p className="text-center font-bold text-3xl capitalize">BOGOTÁ D.C</p>
 
         <p className="text-center font-bold text-2xl capitalize">
-          {dateFormatter(new Date())}
+          {dateFormatter(new Date(today))}
         </p>
         <div className="mt-4 mb-8 w-2/4 sm:w-2/5">
           <Input

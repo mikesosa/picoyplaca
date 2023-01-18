@@ -62,11 +62,11 @@ export default function Home() {
     const day = date.slice(6, 8);
     const isDateEven = Number(day) % 2 === 0;
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
-    const restrictionDays = getRestrictionDates(!isPlateEven, weekDates);
+    const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
     if (isDateEven) {
-      setResult(ODD_PLATES.includes(Number(lastDigit)));
-    } else {
       setResult(EVEN_PLATES.includes(Number(lastDigit)));
+    } else {
+      setResult(ODD_PLATES.includes(Number(lastDigit)));
     }
     setRestrictionDays(restrictionDays);
   };

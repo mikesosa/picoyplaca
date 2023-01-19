@@ -56,15 +56,12 @@ export default function Home() {
   });
 
   const checkPicoPlaca = (plate: string, date: Date) => {
+    console.log(plate, date);
     const startOfWeek = moment().startOf("week").toDate();
     const endOfWeek = moment().endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
     const lastDigit = plate[plate.length - 1];
-    const stringDate = new Date(date)
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, "");
-    const day = stringDate.slice(6, 8);
+    const day = moment(date).format("DD");
     const isDateEven = Number(day) % 2 === 0;
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
     const restrictionDays = getRestrictionDates(isPlateEven, weekDates);

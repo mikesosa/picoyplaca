@@ -56,7 +56,6 @@ export default function Home() {
   });
 
   const checkPicoPlaca = (plate: string, date: Date) => {
-    console.log(plate, date);
     const startOfWeek = moment().startOf("week").toDate();
     const endOfWeek = moment().endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);

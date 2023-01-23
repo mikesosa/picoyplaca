@@ -56,16 +56,19 @@ export default function Home() {
   });
 
   const checkPicoPlaca = (plate: string, date: Date) => {
-    const startOfWeek = moment().startOf("week").toDate();
-    const endOfWeek = moment().endOf("week").toDate();
+    const startOfWeek = moment(new Date(date)).startOf("week").toDate();
+    const endOfWeek = moment(new Date(date)).endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
     const lastDigit = plate[plate.length - 1];
     const day = moment(date).format("DD");
     const isDateEven = Number(day) % 2 === 0;
     const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
-    const restrictionDays = getRestrictionDates(isPlateEven, weekDates);
     const isWeekendDay =
       new Date(date).getDay() === 0 || new Date(date).getDay() === 6;
+    const restrictionDays = getRestrictionDates(
+      isWeekendDay ? !isPlateEven : isPlateEven,
+      weekDates
+    );
     if (isDateEven) {
       setResult(EVEN_PLATES.includes(Number(lastDigit)));
     } else {
@@ -115,11 +118,13 @@ export default function Home() {
           </h2>
         )}
 
-        {!isWeekend && result !== null && (
+        {result !== null && (
           <>
-            <h2 className="text-center font-bold text-6xl uppercase">
-              {result ? "Si" : "No"}
-            </h2>
+            {!isWeekend && (
+              <h2 className="text-center font-bold text-6xl uppercase">
+                {result ? "Si" : "No"}
+              </h2>
+            )}
 
             <p className="text-center text-md mt-3">
               Esta semana tienes pico y placa los dias:

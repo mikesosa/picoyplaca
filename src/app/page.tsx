@@ -95,14 +95,6 @@ export default function Home() {
   return (
     <main className="mx-auto sm:px-6 lg:px-8 flex justify-center h-screen pb-32">
       <div className="flex flex-col justify-center items-center">
-        <h1 className="text-center font-bold text-4xl capitalize">
-          {" "}
-          2 DE FEBRERO DIA SIN CARRO
-        </h1>
-        <p className="text-center font-bold text-xl pb-4">
-          desde las 5 AM hasta las 9 PM
-        </p>
-
         <p className="text-center font-bold text-3xl capitalize">BOGOTÁ D.C</p>
 
         <p className="text-center font-bold text-2xl capitalize">

@@ -3,7 +3,7 @@ import React from "react";
 
 type Props = {};
 
-export default function Footer({}: Props) {
+export default function Footer({ }: Props) {
   return (
     <div className="fixed bottom-0 w-full px-4 pb-2">
       <div className="max-w-lg mx-auto">
@@ -15,6 +15,9 @@ export default function Footer({}: Props) {
         <p className="text-gray-500 text-center text-xs font-mono mt-2">
           Creado con <span className="text-xs">🤍</span> por{" "}
           <Link href="https://twitter.com/micael_sosa">micaelsosa</Link>
+        </p>
+        <p className="text-gray-500 text-center text-xs font-mono mt-1">
+          Modificado con odio por Andrés 😾
         </p>
       </div>
     </div>

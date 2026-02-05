@@ -7,17 +7,31 @@ import { useEffect, useMemo, useState } from "react";
 import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
 import moment from "moment";
 
-// const inter = Inter({ subsets: ['latin'] })
+// Tipos
+type City = "Bogotá" | "Pereira";
 
+// Constantes para Bogotá (lógica par/impar)
 const EVEN_PLATES = [1, 2, 3, 4, 5];
 const ODD_PLATES = [6, 7, 8, 9, 0];
 
+// Reglas de Pereira: día de la semana -> dígitos restringidos
+// 1 = Lunes, 2 = Martes, ..., 5 = Viernes
+const PEREIRA_RULES: Record<number, number[]> = {
+  1: [0, 1], // Lunes
+  2: [2, 3], // Martes
+  3: [4, 5], // Miércoles
+  4: [6, 7], // Jueves
+  5: [8, 9], // Viernes
+};
+
+const CITIES: City[] = ["Bogotá", "Pereira"];
+
 function getWorkingDays(startDate: Date, endDate: Date) {
   const dates = [];
-  const currentDate = startDate;
+  const currentDate = new Date(startDate);
   while (currentDate <= endDate) {
     const weekDay = currentDate.getDay();
-    if (weekDay != 0 && weekDay != 6) {
+    if (weekDay !== 0 && weekDay !== 6) {
       dates.push(new Date(currentDate));
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -25,25 +39,43 @@ function getWorkingDays(startDate: Date, endDate: Date) {
   return dates;
 }
 
-const getRestrictionDates = (isEven: boolean, weekDates: any) => {
-  const days = weekDates
-    .filter((date: any) => {
-      const day = date.toISOString().slice(0, 10).replace(/-/g, "").slice(6, 8);
-      if (isEven) {
-        return Number(day) % 2 === 0;
-      }
-      return Number(day) % 2 !== 0;
-    })
-    .map((date: any) => dateToDayName(date));
-
-  return days;
+// Función para obtener días de restricción según la ciudad
+const getRestrictionDates = (
+  city: City,
+  lastDigit: number,
+  weekDates: Date[]
+): string[] => {
+  if (city === "Bogotá") {
+    const isPlateEven = EVEN_PLATES.includes(lastDigit);
+    const days = weekDates
+      .filter((date: Date) => {
+        const day = date.toISOString().slice(0, 10).replace(/-/g, "").slice(6, 8);
+        if (isPlateEven) {
+          return Number(day) % 2 === 0;
+        }
+        return Number(day) % 2 !== 0;
+      })
+      .map((date: Date) => dateToDayName(date));
+    return days;
+  } else {
+    // Pereira: buscar en qué día de la semana está restringido este dígito
+    const days = weekDates
+      .filter((date: Date) => {
+        const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Lunes, ...
+        const restrictedDigits = PEREIRA_RULES[dayOfWeek];
+        return restrictedDigits?.includes(lastDigit);
+      })
+      .map((date: Date) => dateToDayName(date));
+    return days;
+  }
 };
 
 export default function Home() {
   const today = useMemo(() => new Date(), []);
-  const [result, setResult] = useState<any>(null);
-  const [restrictionDays, setRestrictionDays] = useState<any>([]);
-  const [isWeekend, setIsWeekend] = useState<any>(false);
+  const [city, setCity] = useState<City>("Bogotá");
+  const [result, setResult] = useState<boolean | null>(null);
+  const [restrictionDays, setRestrictionDays] = useState<string[]>([]);
+  const [isWeekend, setIsWeekend] = useState<boolean>(false);
 
   const {
     register,
@@ -55,34 +87,51 @@ export default function Home() {
     resolver: yupResolver(formSchema),
   });
 
-  const checkPicoPlaca = (plate: string, date: Date) => {
+  const checkPicoPlaca = (plate: string, date: Date, selectedCity: City) => {
     const startOfWeek = moment(new Date(date)).startOf("week").toDate();
     const endOfWeek = moment(new Date(date)).endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
-    const lastDigit = plate[plate.length - 1];
-    const day = moment(date).format("DD");
-    const isDateEven = Number(day) % 2 === 0;
-    const isPlateEven = EVEN_PLATES.includes(Number(lastDigit));
+    const lastDigit = Number(plate[plate.length - 1]);
     const isWeekendDay =
       new Date(date).getDay() === 0 || new Date(date).getDay() === 6;
-    const restrictionDays = getRestrictionDates(
-      isWeekendDay ? !isPlateEven : isPlateEven,
+
+    // Calcular días de restricción de la semana
+    const calculatedRestrictionDays = getRestrictionDates(
+      selectedCity,
+      lastDigit,
       weekDates
     );
-    if (isDateEven) {
-      setResult(EVEN_PLATES.includes(Number(lastDigit)));
+
+    if (selectedCity === "Bogotá") {
+      // Lógica de Bogotá: par/impar del día del mes
+      const day = moment(date).format("DD");
+      const isDateEven = Number(day) % 2 === 0;
+      if (isDateEven) {
+        setResult(EVEN_PLATES.includes(lastDigit));
+      } else {
+        setResult(ODD_PLATES.includes(lastDigit));
+      }
     } else {
-      setResult(ODD_PLATES.includes(Number(lastDigit)));
+      // Lógica de Pereira: día de la semana
+      if (isWeekendDay) {
+        setResult(false); // No aplica en fin de semana
+      } else {
+        const dayOfWeek = new Date(date).getDay();
+        const restrictedDigits = PEREIRA_RULES[dayOfWeek] || [];
+        setResult(restrictedDigits.includes(lastDigit));
+      }
     }
+
     setIsWeekend(isWeekendDay);
-    setRestrictionDays(restrictionDays);
+    setRestrictionDays(calculatedRestrictionDays);
   };
 
+  // Efecto para recalcular cuando el usuario escribe
   useEffect(() => {
     const subscription = watchForm((value, { name, type }) => {
       if (name === "number") {
-        if (value.number.length === 3) {
-          checkPicoPlaca(value.number, today);
+        if (value.number && value.number.length === 3) {
+          checkPicoPlaca(value.number, today, city);
         } else {
           setResult(null);
           setIsWeekend(false);
@@ -90,12 +139,30 @@ export default function Home() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [watchForm, today]);
+  }, [watchForm, today, city]);
+
+  // Efecto para recalcular cuando cambia la ciudad
+  useEffect(() => {
+    const currentValue = watchForm("number");
+    if (currentValue && currentValue.length === 3) {
+      checkPicoPlaca(currentValue, today, city);
+    }
+  }, [city]);
 
   return (
     <main className="mx-auto sm:px-6 lg:px-8 flex justify-center h-screen pb-32">
       <div className="flex flex-col justify-center items-center">
-        <p className="text-center font-bold text-3xl capitalize">BOGOTÁ D.C</p>
+        <select
+          value={city}
+          onChange={(e) => setCity(e.target.value as City)}
+          className="text-center font-bold text-3xl uppercase bg-transparent border-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded-lg px-2 py-1 hover:bg-white/10 transition-colors"
+        >
+          {CITIES.map((c) => (
+            <option key={c} value={c} className="bg-black text-white">
+              {c === "Bogotá" ? "BOGOTÁ D.C" : "PEREIRA"}
+            </option>
+          ))}
+        </select>
 
         <p className="text-center font-bold text-2xl capitalize">
           {dateFormatter(new Date(today))}

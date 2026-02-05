@@ -3,7 +3,7 @@ import Input from "@/components/Input";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { formSchema } from "../components/formSchema";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { dateFormatter, dateToDayName } from "@/components/dateFormatter";
 import moment from "moment";
 
@@ -87,7 +87,7 @@ export default function Home() {
     resolver: yupResolver(formSchema),
   });
 
-  const checkPicoPlaca = (plate: string, date: Date, selectedCity: City) => {
+  const checkPicoPlaca = useCallback((plate: string, date: Date, selectedCity: City) => {
     const startOfWeek = moment(new Date(date)).startOf("week").toDate();
     const endOfWeek = moment(new Date(date)).endOf("week").toDate();
     const weekDates = getWorkingDays(startOfWeek, endOfWeek);
@@ -124,7 +124,7 @@ export default function Home() {
 
     setIsWeekend(isWeekendDay);
     setRestrictionDays(calculatedRestrictionDays);
-  };
+  }, []);
 
   // Efecto para recalcular cuando el usuario escribe
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function Home() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [watchForm, today, city]);
+  }, [watchForm, today, city, checkPicoPlaca]);
 
   // Efecto para recalcular cuando cambia la ciudad
   useEffect(() => {
@@ -147,7 +147,7 @@ export default function Home() {
     if (currentValue && currentValue.length === 3) {
       checkPicoPlaca(currentValue, today, city);
     }
-  }, [city]);
+  }, [city, checkPicoPlaca, today, watchForm]);
 
   return (
     <main className="mx-auto sm:px-6 lg:px-8 flex justify-center h-screen pb-32">
